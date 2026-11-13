@@ -1,0 +1,22 @@
+name: Update NBA results
+on:
+  schedule:
+    - cron: "27 */4 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: nba-update
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/update_nba.py
+      - name: Commit changes
+        run: |
+          git config user.name "nba-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A data/nba
+          git diff --cached --quiet || git commit -m "Update NBA results"
+          git pull --rebase -q origin main && git push
